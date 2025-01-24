@@ -1,0 +1,313 @@
+*,
+html {
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  font-family: "Afacad Flux", serif;
+}
+
+.nav-link:hover,
+.navbar-brand:hover {
+  border-bottom: 1px solid wheat;
+}
+
+.client {
+  font-family: "Afacad Flux", serif;
+}
+
+.astronot {
+  width: 80%;
+  height: auto;
+  margin-left: 20%;
+  margin-top: 100px;
+  transform: translateX(0px);
+  animation: float 6s ease-in-out infinite;
+}
+
+.navback {
+  background-image: url(assets/footer-bg.png);
+  font-family: "Afacad Flux", serif;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-60px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+#home {
+  background-image: url(assets/banner-bg.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.gambar-layanan {
+  width: 40%;
+}
+
+.gambar-tentang {
+  width: 70%;
+}
+
+.gambar-staff {
+  width: 40%;
+  border-radius: 20px;
+  border: 3px solid #fff;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gambar-staff:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+.gambar-ig {
+  width: 15%;
+}
+
+.img-mitra {
+  width: 20%;
+}
+
+.mitra {
+  background-image: url(assets/footer-bg-3.png);
+  background-repeat: no-repeat;
+  padding: 20px 0;
+}
+
+#layanan {
+  background-image: url(assets/footer-bg.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#porto {
+  background-image: url(assets/footer-bg-4.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#tentang {
+  background-image: url(assets/footer-bg-3.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#contact {
+  background-image: url(assets/footer-bg-2.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+footer {
+  background-image: url(assets/footer-bg-2.png);
+  background-repeat: no-repeat;
+}
+
+.Layanan_isi {
+  gap: 10px;
+}
+
+.box {
+  position: relative;
+  flex-grow: 1;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 0, 0, 0.5);
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 1s ease-out;
+  margin: 5px;
+}
+
+.box:hover {
+  transform: translateY(-5px);
+}
+
+.box::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #74c0fc, #a29bfe, #8e44ad, #3498db);
+  border-radius: 18px;
+  z-index: -1;
+  background-size: 300% 300%;
+  transition: all 1s ease-out;
+  animation: gradient 5s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Membuat card mengisi tinggi kontainer */
+}
+
+.image-container {
+  width: 100%;
+  height: 200px; /* Atur tinggi tetap untuk gambar */
+  overflow: hidden; /* Sembunyikan bagian gambar yang melampaui kontainer */
+}
+
+.image-container img {
+  width: 100%; /* Gambar memenuhi lebar kontainer */
+  height: 100%; /* Gambar memenuhi tinggi kontainer */
+  object-fit: cover; /* Menjaga aspek rasio gambar */
+}
+
+.card-body {
+  flex-grow: 1; /* Membuat bagian ini tumbuh untuk mengisi ruang */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Memberi jarak antar elemen di dalam card */
+  text-align: center; /* Menengahkan semua konten dalam card-body */
+}
+
+.roket {
+  width: 500px;
+  height: 500px;
+  margin-left: 100px;
+}
+
+/* Ganti style untuk indikator carousel */
+.carousel-indicators-custom {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.carousel-indicators-custom button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: none;
+  opacity: 0.5;
+  padding: 0;
+  transition: opacity 0.3s ease;
+}
+
+.carousel-indicators-custom button.active {
+  opacity: 1;
+}
+
+.card .btn-dark {
+  width: fit-content;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* Menambahkan margin auto di kiri */
+  margin-right: auto; /* Menambahkan margin auto di kanan */
+}
+
+.card .btn-dark i {
+  font-size: 1.2rem;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.social-buttons .btn-dark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  transition: transform 0.3s ease;
+}
+
+.social-buttons .btn-dark:hover {
+  transform: translateY(-3px);
+}
+
+.social-buttons .btn-dark i {
+  font-size: 1.2rem;
+}
+
+/* Style untuk tombol contact */
+#form-contact .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  transition: transform 0.3s ease;
+}
+
+#form-contact .btn:hover {
+  transform: translateY(-3px);
+}
+
+#form-contact .btn i {
+  font-size: 1.2rem;
+}
+
+/* Mengatur warna khusus untuk tombol WhatsApp */
+.btn-success {
+  background-color: #25d366;
+  border-color: #25d366;
+}
+
+.btn-success:hover {
+  background-color: #128c7e;
+  border-color: #128c7e;
+}
+
+/* Mengatur warna khusus untuk tombol Instagram */
+.btn-danger {
+  background: linear-gradient(
+    45deg,
+    #405de6,
+    #5851db,
+    #833ab4,
+    #c13584,
+    #e1306c,
+    #fd1d1d
+  );
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(
+    45deg,
+    #833ab4,
+    #c13584,
+    #e1306c,
+    #fd1d1d,
+    #405de6,
+    #5851db
+  );
+}
