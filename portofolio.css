@@ -624,3 +624,39 @@ footer {
     transform: translate(90%, calc(1045%));
   }
 }
+
+/* Samakan tinggi card-body di carousel */
+.carousel-inner .card-body {
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Responsive adjustment for card-body height */
+@media (max-width: 768px) {
+  .carousel-inner .card-body {
+    min-height: 260px;
+  }
+}
+@media (max-width: 576px) {
+  .carousel-inner .card-body {
+    min-height: 200px;
+  }
+}
+
+/* Animasi fade-in untuk carousel-item */
+.carousel-item.carousel-fadein {
+  animation: carouselFadeIn 2s;
+}
+
+@keyframes carouselFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

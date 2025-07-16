@@ -110,4 +110,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
   });
+
+  // Animasi fade-in pada setiap pergantian slide carousel
+  if (carousel) {
+    const items = carousel.querySelectorAll(".carousel-item");
+    // Tambahkan animasi pada item aktif saat pertama kali
+    items.forEach(function (item) {
+      if (item.classList.contains("active")) {
+        item.classList.add("carousel-fadein");
+      }
+    });
+    carousel.addEventListener("slid.bs.carousel", function () {
+      items.forEach(function (item) {
+        item.classList.remove("carousel-fadein");
+      });
+      const activeItem = carousel.querySelector(".carousel-item.active");
+      if (activeItem) {
+        activeItem.classList.add("carousel-fadein");
+      }
+    });
+  }
 });
