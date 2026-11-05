@@ -1,0 +1,37 @@
+# Portofolio Daffa — https://daffa.forensa.tech
+#
+# Memakai Traefik yang sudah berjalan di VPS (sama seperti Forensa),
+# jadi container ini TIDAK membuka port 80/443 sendiri. Traefik yang
+# meneruskan request daffa.forensa.tech ke sini dan membuat sertifikat
+# HTTPS Let's Encrypt secara otomatis.
+
+services:
+  portofolio:
+    build: .
+    image: daffa-portofolio:latest
+    container_name: daffa-portofolio
+    restart: unless-stopped
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.portofolio.loadbalancer.server.port=80"
+      # HTTPS
+      - "traefik.http.routers.portofolio.rule=Host(`daffa.forensa.tech`)"
+      - "traefik.http.routers.portofolio.entrypoints=websecure"
+      - "traefik.http.routers.portofolio.service=portofolio"
+      - "traefik.http.routers.portofolio.tls=true"
+      - "traefik.http.routers.portofolio.tls.certresolver=letsencrypt"
+      # HTTP -> alihkan ke HTTPS
+      - "traefik.http.routers.portofolio-http.rule=Host(`daffa.forensa.tech`)"
+      - "traefik.http.routers.portofolio-http.entrypoints=web"
+      - "traefik.http.routers.portofolio-http.service=portofolio"
+      - "traefik.http.routers.portofolio-http.middlewares=portofolio-https-redirect"
+      - "traefik.http.middlewares.portofolio-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.portofolio-https-redirect.redirectscheme.permanent=true"
+    networks:
+      - portofolio-network
+
+networks:
+  portofolio-network:
+    driver: bridge

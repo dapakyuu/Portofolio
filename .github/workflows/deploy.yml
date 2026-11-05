@@ -1,0 +1,101 @@
+name: Build & Deploy ke VPS
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: # bisa dijalankan manual dari tab Actions
+
+# Jangan jalankan dua deploy bersamaan; deploy terbaru menggantikan yang lama
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & uji image Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t daffa-portofolio:ci .
+
+      - name: Jalankan container & cek halaman
+        run: |
+          docker run -d --name porto -p 8080:80 daffa-portofolio:ci
+          for i in $(seq 1 20); do
+            curl -fsS http://localhost:8080/healthz && break
+            sleep 1
+          done
+          curl -fsS http://localhost:8080/ | grep -q '<div id="root">'
+          curl -fsS -o /dev/null http://localhost:8080/assets/daffa.jpg
+          echo "Container OK"
+
+      - name: Tampilkan log jika gagal
+        if: failure()
+        run: docker logs porto || true
+
+  deploy:
+    name: Deploy ke VPS Hostinger
+    needs: build
+    # Hanya deploy saat push ke master atau dijalankan manual (bukan saat pull request)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cek secret VPS sudah diisi
+        id: check
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ]; then
+            echo "::warning::Secret VPS_HOST / VPS_USER / VPS_SSH_KEY belum diisi. Deploy dilewati. Lihat docs/DEPLOY.md langkah 4."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sinkronkan & jalankan ulang di VPS lewat SSH
+        if: steps.check.outputs.ready == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_DIR: ${{ secrets.VPS_APP_DIR || '/opt/portofolio' }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          BRANCH: master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          envs: APP_DIR,REPO_URL,BRANCH
+          command_timeout: 15m
+          script: |
+            set -e
+            # Clone otomatis kalau folder belum ada (deploy pertama)
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
+            fi
+            cd "$APP_DIR"
+
+            # Samakan isi folder di VPS persis dengan GitHub
+            git fetch --prune origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+            echo "Commit aktif: $(git log -1 --pretty='%h %s')"
+
+            # Build ulang & jalankan container baru
+            docker compose up -d --build --remove-orphans
+
+            # Tunggu sampai container sehat
+            for i in $(seq 1 30); do
+              status=$(docker inspect -f '{{.State.Health.Status}}' daffa-portofolio 2>/dev/null || echo starting)
+              [ "$status" = "healthy" ] && break
+              sleep 2
+            done
+            echo "Status container: $status"
+            [ "$status" = "healthy" ]
+
+            # Bersihkan image lama agar disk VPS tidak penuh
+            docker image prune -f

@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.github
+konteks
+docs
+*.md
+*.local
+.DS_Store
+Dockerfile
+docker-compose.yml

@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# Data pribadi (CV dll.) - jangan di-upload
+konteks/
