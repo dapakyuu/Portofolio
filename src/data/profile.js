@@ -50,7 +50,13 @@ export const skills = [
     icon: "ml",
     description:
       "Mengembangkan model Machine Learning dan mengintegrasikan komponen AI seperti LLM serta analisis multimodal.",
-    tools: ["Python", "Machine Learning", "LLM", "Analisis Data"],
+    tools: [
+      "Python",
+      "Machine Learning",
+      "LLM",
+      "Pengolahan Data",
+      "Analisis Data",
+    ],
   },
   {
     title: "Mobile App Development",

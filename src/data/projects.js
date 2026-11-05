@@ -131,6 +131,7 @@ export const projects = [
     category: "Mobile",
     tech: [],
     github: "https://github.com/dapakyuu/Kompas-Kiblat_GBN",
+    highlight: "Pengabdian Kepada Masyarakat",
   },
   {
     title: "Website Kriptografi dan Steganografi",
@@ -175,7 +176,6 @@ export const projects = [
     image: "assets/winnicode_portalberita.png",
     category: "Web",
     tech: ["Laravel", "NewsAPI", "BMKG API"],
-    github: "https://github.com/dapakyuu/PortalBeritaWinnicode",
     highlight: "Magang",
   },
 ];
