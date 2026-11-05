@@ -47,7 +47,8 @@ src/index.css         seluruh styling
 Live di **https://daffa.forensa.tech** (VPS Hostinger, Docker + Traefik).
 
 Setiap push ke `master` otomatis di-build, diuji, dan di-deploy ke VPS oleh
-GitHub Actions (`.github/workflows/deploy.yml`).
+GitHub Actions lewat Hostinger API / Docker Manager
+(`.github/workflows/deploy.yml`), sama seperti Forensa.
 
 Tutorial lengkap (membuat subdomain, setup VPS, dan GitHub Actions):
 **[docs/DEPLOY.md](docs/DEPLOY.md)**

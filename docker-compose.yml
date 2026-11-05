@@ -1,15 +1,18 @@
 # Portofolio Daffa — https://daffa.forensa.tech
 #
-# Memakai Traefik yang sudah berjalan di VPS (sama seperti Forensa),
-# jadi container ini TIDAK membuka port 80/443 sendiri. Traefik yang
-# meneruskan request daffa.forensa.tech ke sini dan membuat sertifikat
-# HTTPS Let's Encrypt secara otomatis.
+# Di-deploy otomatis oleh GitHub Actions lewat Hostinger API (Docker Manager),
+# sama seperti Forensa. Source code diambil langsung dari GitHub pada commit
+# yang sedang di-deploy (DEPLOY_COMMIT), jadi setiap push pasti ter-build ulang.
+#
+# Memakai Traefik yang sudah berjalan di VPS, jadi container ini TIDAK membuka
+# port 80/443 sendiri. Traefik yang meneruskan request daffa.forensa.tech ke
+# sini dan membuat sertifikat HTTPS Let's Encrypt secara otomatis.
 
 services:
   portofolio:
-    build: .
-    image: daffa-portofolio:latest
-    container_name: daffa-portofolio
+    build:
+      context: https://github.com/dapakyuu/Portofolio.git#${DEPLOY_COMMIT:-master}
+      dockerfile: Dockerfile
     restart: unless-stopped
     expose:
       - "80"

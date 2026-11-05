@@ -7,17 +7,20 @@ on:
     branches: [master]
   workflow_dispatch: # bisa dijalankan manual dari tab Actions
 
-# Jangan jalankan dua deploy bersamaan; deploy terbaru menggantikan yang lama
+permissions:
+  contents: read
+
+# Jangan jalankan dua deploy bersamaan
 concurrency:
-  group: deploy-production
-  cancel-in-progress: true
+  group: portofolio-production
+  cancel-in-progress: false
 
 jobs:
   build:
     name: Build & uji image Docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build image
         run: docker build -t daffa-portofolio:ci .
@@ -43,59 +46,30 @@ jobs:
     # Hanya deploy saat push ke master atau dijalankan manual (bukan saat pull request)
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Cek secret VPS sudah diisi
+      - uses: actions/checkout@v5
+
+      - name: Cek API key & VM ID sudah diisi
         id: check
         env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          API_KEY: ${{ secrets.HOSTINGER_API_KEY }}
+          VM_ID: ${{ vars.HOSTINGER_VM_ID }}
         run: |
-          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ]; then
-            echo "::warning::Secret VPS_HOST / VPS_USER / VPS_SSH_KEY belum diisi. Deploy dilewati. Lihat docs/DEPLOY.md langkah 4."
+          if [ -z "$API_KEY" ] || [ -z "$VM_ID" ]; then
+            echo "::warning::Secret HOSTINGER_API_KEY atau variable HOSTINGER_VM_ID belum diisi. Deploy dilewati. Lihat docs/DEPLOY.md langkah 3."
             echo "ready=false" >> "$GITHUB_OUTPUT"
           else
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Sinkronkan & jalankan ulang di VPS lewat SSH
+      - name: Deploy lewat Hostinger API (Docker Manager)
         if: steps.check.outputs.ready == 'true'
-        uses: appleboy/ssh-action@v1.2.0
-        env:
-          APP_DIR: ${{ secrets.VPS_APP_DIR || '/opt/portofolio' }}
-          REPO_URL: https://github.com/${{ github.repository }}.git
-          BRANCH: master
+        uses: hostinger/deploy-on-vps@v2
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          envs: APP_DIR,REPO_URL,BRANCH
-          command_timeout: 15m
-          script: |
-            set -e
-            # Clone otomatis kalau folder belum ada (deploy pertama)
-            if [ ! -d "$APP_DIR/.git" ]; then
-              git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
-            fi
-            cd "$APP_DIR"
-
-            # Samakan isi folder di VPS persis dengan GitHub
-            git fetch --prune origin "$BRANCH"
-            git reset --hard "origin/$BRANCH"
-            echo "Commit aktif: $(git log -1 --pretty='%h %s')"
-
-            # Build ulang & jalankan container baru
-            docker compose up -d --build --remove-orphans
-
-            # Tunggu sampai container sehat
-            for i in $(seq 1 30); do
-              status=$(docker inspect -f '{{.State.Health.Status}}' daffa-portofolio 2>/dev/null || echo starting)
-              [ "$status" = "healthy" ] && break
-              sleep 2
-            done
-            echo "Status container: $status"
-            [ "$status" = "healthy" ]
-
-            # Bersihkan image lama agar disk VPS tidak penuh
-            docker image prune -f
+          api-key: ${{ secrets.HOSTINGER_API_KEY }}
+          virtual-machine: ${{ vars.HOSTINGER_VM_ID }}
+          project-name: portofolio
+          docker-compose-path: docker-compose.yml
+          environment-variables: |
+            DEPLOY_COMMIT=${{ github.sha }}

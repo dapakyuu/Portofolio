@@ -1,32 +1,35 @@
-# Tutorial Deploy Portofolio ke VPS Hostinger
+# Tutorial Deploy Portofolio ke VPS Hostinger (Docker Manager)
 
 Target akhir: portofolio bisa dibuka di **https://daffa.forensa.tech**, dan setiap
 kali kamu `git push` ke branch `master`, VPS otomatis ikut ter-update.
+**Semua langkah dilakukan lewat hPanel dan GitHub, tanpa terminal VPS.**
 
 ```
- Kamu ──git push──▶ GitHub ──GitHub Actions──▶ VPS Hostinger (187.52.122.64)
-                                                 │
+ Kamu ──git push──▶ GitHub Actions ──Hostinger API──▶ Docker Manager di VPS
+                                                        │  (build dari GitHub)
                      Pengunjung ──HTTPS──▶ Traefik (sudah ada, dipakai Forensa)
-                                                 ├──▶ forensa.tech       → container Forensa
-                                                 └──▶ daffa.forensa.tech → container portofolio
+                                                        ├──▶ forensa.tech       → Forensa
+                                                        └──▶ daffa.forensa.tech → portofolio
 ```
 
-VPS kamu sudah menjalankan **Traefik** (reverse proxy yang dipakai Forensa).
-Portofolio cukup "menumpang" ke Traefik lewat label di `docker-compose.yml`, jadi:
+Cara kerjanya sama dengan Forensa:
 
-- tidak perlu membuka port baru di firewall,
-- sertifikat HTTPS (Let's Encrypt) dibuat otomatis oleh Traefik,
-- Forensa tidak terganggu sama sekali.
+- GitHub Actions mengirim `docker-compose.yml` ke **Hostinger API** memakai API key.
+- Docker Manager mengambil source code langsung dari GitHub pada commit terbaru,
+  lalu mem-build dan menjalankannya sebagai project **portofolio**.
+- **Traefik** yang sudah berjalan di VPS meneruskan `daffa.forensa.tech` ke
+  container portofolio dan membuat sertifikat HTTPS secara otomatis.
+  Tidak perlu membuka port baru, dan Forensa tidak terganggu.
 
 ---
 
 ## Daftar isi
 
 1. [Buat subdomain `daffa.forensa.tech`](#1-buat-subdomain-daffaforensatech)
-2. [Masuk ke VPS & cek Traefik](#2-masuk-ke-vps--cek-traefik)
-3. [Deploy pertama secara manual](#3-deploy-pertama-secara-manual)
-4. [Hubungkan GitHub Actions ke VPS](#4-hubungkan-github-actions-ke-vps)
-5. [Uji deploy otomatis](#5-uji-deploy-otomatis)
+2. [Siapkan API key & VM ID Hostinger](#2-siapkan-api-key--vm-id-hostinger)
+3. [Simpan ke GitHub](#3-simpan-ke-github)
+4. [Jalankan deploy pertama](#4-jalankan-deploy-pertama)
+5. [Cek hasilnya](#5-cek-hasilnya)
 6. [Pemakaian sehari-hari](#6-pemakaian-sehari-hari)
 7. [Troubleshooting](#7-troubleshooting)
 
@@ -34,12 +37,12 @@ Portofolio cukup "menumpang" ke Traefik lewat label di `docker-compose.yml`, jad
 
 ## 1. Buat subdomain `daffa.forensa.tech`
 
-Domain `forensa.tech` memakai nameserver Hostinger (`dns-parking.com`), jadi
-subdomain cukup dibuat dengan menambah **DNS record** di hPanel.
+Domain `forensa.tech` memakai nameserver Hostinger, jadi subdomain cukup dibuat
+dengan menambah **DNS record**.
 
 1. Login ke [hPanel Hostinger](https://hpanel.hostinger.com).
 2. Buka **Domains** → pilih **forensa.tech** → **DNS / Nameservers**.
-3. Di bagian **Manage DNS records**, tambahkan record baru:
+3. Di bagian **Manage DNS records**, tambahkan record:
 
    | Type | Name    | Points to       | TTL   |
    |------|---------|-----------------|-------|
@@ -51,228 +54,183 @@ subdomain cukup dibuat dengan menambah **DNS record** di hPanel.
 4. Klik **Add Record**.
 
 > ⚠️ Jangan pakai menu **Websites → Subdomains**. Menu itu untuk shared hosting,
-> bukan VPS. Untuk VPS cukup A record seperti di atas.
+> bukan VPS.
 
-**Cek apakah DNS sudah aktif** (biasanya 5–30 menit, paling lama beberapa jam).
-Jalankan di komputer kamu:
+**Cek DNS sudah aktif** (biasanya 5–30 menit). Jalankan di komputer kamu:
 
 ```bash
 nslookup daffa.forensa.tech 8.8.8.8
 ```
 
 Sudah benar jika hasilnya menampilkan `Address: 187.52.122.64`.
+Kamu juga bisa cek lewat https://dnschecker.org/#A/daffa.forensa.tech.
 
 ---
 
-## 2. Masuk ke VPS & cek Traefik
+## 2. Siapkan API key & VM ID Hostinger
 
-Masuk ke VPS lewat **hPanel → VPS → Browser terminal**, atau dari terminal komputer:
+### API key
 
-```bash
-ssh root@187.52.122.64
-```
+Kamu boleh memakai API key yang sama dengan Forensa. Tapi nilai secret yang sudah
+tersimpan di GitHub tidak bisa dilihat lagi, jadi kalau kamu tidak menyimpan
+salinannya, buat key baru:
 
-Lihat container yang sedang berjalan:
+1. Buka **hPanel → Profile → API** (https://hpanel.hostinger.com/profile/api).
+2. Klik **Generate token** (atau **New token**), beri nama misalnya
+   `github-portofolio`, lalu salin token-nya.
+   Token hanya ditampilkan sekali, jadi simpan sampai langkah 3 selesai.
 
-```bash
-docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}"
-```
+### VM ID
 
-Pastikan ada container **traefik** yang memakai port `80` dan `443`, serta
-container Forensa. Kalau Traefik ada, langkah berikutnya bisa dilanjutkan.
+1. Buka **hPanel → VPS** → pilih VPS kamu.
+2. Lihat URL di browser, contohnya `https://hpanel.hostinger.com/vps/123456/overview`.
+   Angka `123456` itulah **VM ID**.
+   (Jika hostname VPS masih default, misalnya `srv123456.hstgr.cloud`, VM ID-nya
+   juga `123456`.)
 
-Pastikan juga Docker Compose tersedia:
-
-```bash
-docker compose version
-```
+VM ID-nya sama dengan yang dipakai Forensa, karena kedua project berada di VPS yang sama.
 
 ---
 
-## 3. Deploy pertama secara manual
+## 3. Simpan ke GitHub
 
-Deploy pertama dilakukan manual agar kita yakin semuanya berjalan sebelum
-diotomatiskan.
+Buka https://github.com/dapakyuu/Portofolio/settings/secrets/actions
+(**Settings → Secrets and variables → Actions**).
 
-```bash
-# 1. Ambil source code dari GitHub
-git clone https://github.com/dapakyuu/Portofolio.git /opt/portofolio
-cd /opt/portofolio
+**Tab "Secrets"** → **New repository secret**:
 
-# 2. Build image & jalankan container (build pertama ±1–3 menit)
-docker compose up -d --build
+| Name                | Value                         |
+|---------------------|-------------------------------|
+| `HOSTINGER_API_KEY` | API key dari langkah 2        |
 
-# 3. Cek status, tunggu sampai kolom STATUS menunjukkan "(healthy)"
-docker compose ps
-```
+**Tab "Variables"** → **New repository variable**:
 
-### Uji dari dalam VPS (tanpa menunggu DNS)
+| Name              | Value                          |
+|-------------------|--------------------------------|
+| `HOSTINGER_VM_ID` | VM ID dari langkah 2, mis. `123456` |
 
-```bash
-# Harus menjawab "301 Moved Permanently" ke https:// (redirect HTTP → HTTPS)
-curl -I -H "Host: daffa.forensa.tech" http://127.0.0.1
+> Secret dan variable bersifat **per repository**. Walaupun Forensa sudah punya,
+> repo Portofolio tetap harus diisi sendiri.
 
-# Harus menjawab "HTTP/2 200"
-curl -kI --resolve daffa.forensa.tech:443:127.0.0.1 https://daffa.forensa.tech
-```
+---
 
-### Uji dari browser
+## 4. Jalankan deploy pertama
 
-Setelah DNS di langkah 1 aktif, buka **https://daffa.forensa.tech**.
+1. Buka tab **Actions** di https://github.com/dapakyuu/Portofolio/actions.
+2. Pilih workflow **Build & Deploy ke VPS** di sebelah kiri.
+3. Klik **Run workflow** → **Run workflow**.
+
+Workflow terdiri dari dua job:
+
+| Job                          | Fungsi                                                              |
+|------------------------------|---------------------------------------------------------------------|
+| **Build & uji image Docker** | Mem-build image dan memastikan halaman bisa dibuka. Kalau gagal, deploy dibatalkan. |
+| **Deploy ke VPS Hostinger**  | Mengirim perintah deploy ke Hostinger API.                          |
+
+Tunggu sampai keduanya bercentang hijau ✅ (±2–5 menit).
+
+> Kalau job Deploy hijau tetapi ada peringatan *"belum diisi. Deploy dilewati"*,
+> berarti secret atau variable di langkah 3 belum tersimpan atau namanya salah ketik.
+
+---
+
+## 5. Cek hasilnya
+
+### Di Docker Manager
+
+1. Buka **hPanel → VPS → Docker Manager**.
+2. Akan muncul project baru bernama **portofolio** di samping project Forensa.
+3. Pastikan statusnya **Running**, dan container-nya **healthy** jika ditampilkan.
+4. Klik project → **Logs** untuk melihat log build dan log container.
+
+Build pertama di VPS biasanya 1–3 menit. Selama build berlangsung, statusnya
+belum Running.
+
+### Di browser
+
+Buka **https://daffa.forensa.tech**.
 
 Saat dibuka pertama kali, Traefik butuh beberapa detik untuk meminta sertifikat
 HTTPS ke Let's Encrypt. Kalau muncul peringatan sertifikat, tunggu ±1 menit lalu
-refresh. Kalau belum berhasil juga, lihat [Troubleshooting](#7-troubleshooting).
-
----
-
-## 4. Hubungkan GitHub Actions ke VPS
-
-Workflow ada di `.github/workflows/deploy.yml`. Setiap push ke `master`:
-
-1. **Build** — GitHub membangun image Docker dan menguji bahwa halaman bisa dibuka.
-   Kalau gagal, deploy dibatalkan dan VPS tidak tersentuh.
-2. **Deploy** — GitHub masuk ke VPS lewat SSH, menyamakan isi `/opt/portofolio`
-   dengan GitHub (`git reset --hard`), lalu menjalankan `docker compose up -d --build`.
-
-Agar GitHub bisa masuk ke VPS, kita buat **SSH key khusus** untuk GitHub Actions.
-
-### 4.1 Buat SSH key di VPS
-
-Jalankan di VPS:
-
-```bash
-# Buat pasangan key baru khusus untuk GitHub Actions (tanpa passphrase)
-ssh-keygen -t ed25519 -C "github-actions-portofolio" -f ~/.ssh/github_actions_portofolio -N ""
-
-# Izinkan key ini untuk login ke VPS
-cat ~/.ssh/github_actions_portofolio.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-
-# Tampilkan PRIVATE key untuk disalin ke GitHub
-cat ~/.ssh/github_actions_portofolio
-```
-
-Salin **seluruh** output perintah terakhir, termasuk baris
-`-----BEGIN OPENSSH PRIVATE KEY-----` dan `-----END OPENSSH PRIVATE KEY-----`.
-
-### 4.2 Simpan sebagai Secret di GitHub
-
-1. Buka https://github.com/dapakyuu/Portofolio/settings/secrets/actions
-   (**Settings → Secrets and variables → Actions**).
-2. Klik **New repository secret**, lalu tambahkan satu per satu:
-
-   | Name          | Value                                       |
-   |---------------|---------------------------------------------|
-   | `VPS_HOST`    | `187.52.122.64`                             |
-   | `VPS_USER`    | `root`                                      |
-   | `VPS_SSH_KEY` | private key yang disalin di langkah 4.1     |
-
-   Opsional (hanya jika berbeda dari default):
-
-   | Name          | Default           | Kapan diisi                            |
-   |---------------|-------------------|----------------------------------------|
-   | `VPS_PORT`    | `22`              | Jika port SSH VPS kamu diganti         |
-   | `VPS_APP_DIR` | `/opt/portofolio` | Jika project disimpan di folder lain   |
-
-### 4.3 Hapus private key dari VPS
-
-Private key sudah tersimpan di GitHub dan tidak dibutuhkan lagi di VPS:
-
-```bash
-rm ~/.ssh/github_actions_portofolio
-```
-
-(File `.pub` boleh dibiarkan. Yang dipakai VPS adalah isi `authorized_keys`.)
-
-> **Pakai user selain root?** Pastikan user tersebut bisa menjalankan Docker
-> tanpa `sudo` dan memiliki folder project:
->
-> ```bash
-> sudo usermod -aG docker NAMA_USER
-> sudo chown -R NAMA_USER:NAMA_USER /opt/portofolio
-> ```
->
-> Logout lalu login lagi agar grup `docker` aktif, dan isi `VPS_USER` dengan
-> `NAMA_USER`. Langkah 4.1 juga dijalankan sebagai user tersebut.
-
----
-
-## 5. Uji deploy otomatis
-
-**Cara 1 — jalankan manual:**
-buka tab **Actions** di GitHub → pilih **Build & Deploy ke VPS** → **Run workflow**.
-
-**Cara 2 — push perubahan:**
-
-```bash
-git add .
-git commit -m "Coba deploy otomatis"
-git push
-```
-
-Buka tab **Actions** untuk melihat prosesnya. Kalau kedua job (**Build & uji
-image Docker** dan **Deploy ke VPS Hostinger**) bercentang hijau, website
-sudah ter-update. Total waktunya biasanya 2–4 menit.
+refresh.
 
 ---
 
 ## 6. Pemakaian sehari-hari
 
-Alurnya cukup seperti ini:
-
 1. Ubah project di komputer, misalnya menambah project di `src/data/projects.js`.
 2. Cek di lokal dengan `npm run dev`.
-3. `git add .` → `git commit -m "..."` → `git push`.
-4. Tunggu centang hijau di tab Actions, lalu website otomatis ter-update.
+3. Upload ke GitHub:
 
-> Jangan mengedit file langsung di VPS (`/opt/portofolio`). Setiap deploy
-> menjalankan `git reset --hard`, jadi perubahan di VPS akan tertimpa isi GitHub.
+   ```bash
+   git add .
+   git commit -m "Tambah project baru"
+   git push
+   ```
 
-### Perintah berguna di VPS
+4. GitHub Actions otomatis build dan deploy. Setelah centang hijau dan build di
+   Docker Manager selesai, website sudah ter-update.
 
-```bash
-cd /opt/portofolio
-
-docker compose ps            # status container
-docker compose logs -f       # lihat log (Ctrl+C untuk keluar)
-docker compose restart       # restart container
-docker compose down          # matikan portofolio (Forensa tidak terpengaruh)
-docker compose up -d --build # build ulang & jalankan manual
-```
+> Jangan mengedit compose project ini langsung di Docker Manager. Setiap deploy
+> dari GitHub akan menimpa perubahan tersebut. Ubah `docker-compose.yml` di repo
+> lalu push.
 
 ### Kembali ke versi sebelumnya (rollback)
 
-Cara paling aman adalah lewat Git, agar GitHub dan VPS tetap sinkron:
-
 ```bash
 git revert HEAD   # batalkan commit terakhir
-git push          # VPS otomatis ikut kembali ke versi sebelumnya
+git push          # VPS otomatis kembali ke versi sebelumnya
 ```
+
+### Mematikan / restart
+
+Lewat **Docker Manager** → project **portofolio** → tombol **Stop**, **Restart**,
+atau **Delete**. Forensa tidak terpengaruh.
 
 ---
 
 ## 7. Troubleshooting
 
-### `404 page not found` (teks polos, dari Traefik)
+### Job "Build & uji image Docker" gagal
 
-Traefik berjalan, tetapi belum mengenali container portofolio.
+Kode tidak bisa di-build. Buka log job di tab Actions untuk melihat error-nya,
+atau jalankan `npm run build` di komputer. Perbaiki, lalu push lagi.
+Selama build gagal, VPS tetap menjalankan versi lama.
 
-- Cek container berjalan: `docker compose ps`.
-- Cek label terbaca: `docker inspect daffa-portofolio --format '{{json .Config.Labels}}'`.
-- Pastikan nama domain di `docker-compose.yml` tepat `daffa.forensa.tech`.
+### Job "Deploy" gagal dengan error `401` / `Unauthorized`
+
+API key salah atau sudah dihapus. Buat token baru (langkah 2), lalu perbarui
+secret `HOSTINGER_API_KEY`.
+
+### Job "Deploy" gagal dengan error VM tidak ditemukan / `404`
+
+`HOSTINGER_VM_ID` salah. Pastikan isinya hanya angka dari URL hPanel (langkah 2),
+dan disimpan di tab **Variables**, bukan Secrets.
+
+### Project gagal di Docker Manager (status Error / Exited)
+
+Buka **Docker Manager → portofolio → Logs**.
+
+- Error saat mengambil `github.com/...Portofolio.git`: pastikan repo tetap
+  **public**. Jika repo dijadikan private, VPS butuh deploy key (lihat
+  [panduan Hostinger](https://www.hostinger.com/support/how-to-deploy-from-private-github-repository-on-hostinger-docker-manager/)).
+- Error `npm ci` / `vite build`: biasanya juga tertangkap di job Build GitHub.
+  Lihat bagian di atas.
+
+### `404 page not found` (teks polos)
+
+Halaman ini berasal dari Traefik: Traefik berjalan, tetapi belum mengenali
+container portofolio.
+
+- Pastikan project **portofolio** berstatus Running di Docker Manager.
+- Pastikan domain di `docker-compose.yml` tepat `daffa.forensa.tech`.
 
 ### `Bad Gateway` atau `Gateway Timeout`
 
-Traefik mengenali container, tetapi tidak bisa menjangkaunya karena beda jaringan
-Docker. Cek jaringan yang dipakai Traefik:
-
-```bash
-docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' NAMA_CONTAINER_TRAEFIK
-```
-
-Jika Traefik ada di jaringan tertentu (misalnya `traefik-proxy`), sambungkan
-portofolio ke jaringan itu. Ubah bagian `networks` di `docker-compose.yml`:
+Traefik mengenali container, tetapi tidak bisa menjangkaunya karena berada di
+jaringan Docker yang berbeda. Lihat project **Traefik** di Docker Manager untuk
+mengetahui nama jaringannya (misalnya `traefik-proxy`). Lalu ubah
+`docker-compose.yml` di repo:
 
 ```yaml
 services:
@@ -293,26 +251,20 @@ Commit dan push. Deploy otomatis akan menerapkan perubahannya.
 
 ### Sertifikat HTTPS tidak valid / "Not secure"
 
-- Pastikan DNS sudah mengarah ke VPS (`nslookup daffa.forensa.tech 8.8.8.8`).
-  Let's Encrypt hanya bisa menerbitkan sertifikat kalau domain sudah aktif.
-- Pastikan nama certresolver sama dengan yang dipakai Traefik. Portofolio memakai
-  `letsencrypt`, sama seperti Forensa. Cek log Traefik:
-  `docker logs NAMA_CONTAINER_TRAEFIK 2>&1 | grep -i daffa`.
+- Pastikan DNS sudah aktif (langkah 1). Let's Encrypt hanya bisa menerbitkan
+  sertifikat kalau domain sudah mengarah ke VPS.
+- Setelah DNS aktif, **Restart** project portofolio di Docker Manager agar
+  Traefik mencoba lagi.
 
-### Job "Deploy" gagal: `ssh: handshake failed` / `unable to authenticate`
+---
 
-- Isi `VPS_SSH_KEY` harus **private key** (bukan `.pub`), lengkap dengan baris BEGIN/END.
-- Public key-nya harus ada di `~/.ssh/authorized_keys` milik user di `VPS_USER`.
-- Firewall Hostinger harus mengizinkan port SSH (22) dari internet, karena IP
-  server GitHub Actions selalu berubah.
+## Lampiran: menjalankan image Docker di komputer sendiri
 
-### Job "Deploy" gagal: `permission denied ... docker.sock`
+```bash
+docker build -t daffa-portofolio .
+docker run --rm -p 8080:80 daffa-portofolio   # buka http://localhost:8080
+```
 
-User di `VPS_USER` tidak punya akses Docker. Lihat catatan **Pakai user selain
-root?** di langkah 4.3.
-
-### Job "Build" gagal
-
-Error-nya ada di log job. Biasanya kode tidak bisa di-build. Jalankan
-`npm run build` di komputer untuk melihat error yang sama, perbaiki, lalu push lagi.
-Selama job Build gagal, VPS tetap menjalankan versi lama yang masih berfungsi.
+`docker-compose.yml` memang disiapkan untuk VPS (mengambil source dari GitHub).
+Untuk mencoba perubahan lokal yang belum di-push, gunakan dua perintah di atas
+atau `npm run dev`.
