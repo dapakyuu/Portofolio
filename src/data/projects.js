@@ -31,6 +31,17 @@ export const projects = [
     highlight: "Publikasi Jurnal",
   },
   {
+    title: "Web Portal Berita Winnicode",
+    description:
+      "Hasil magang di PT. Winnicode Garuda Teknologi. Portal berita berbasis Laravel yang mengintegrasikan NewsAPI, API cuaca BMKG, dan API livescore untuk klasemen sepak bola.",
+    image: "assets/winnicode_portalberita.png",
+    category: "Web",
+    tech: ["Laravel", "NewsAPI", "AdminLTE"],
+    github: "https://github.com/dapakyuu/WinnicodePortalBerita",
+    demo: "https://winnicode.forensa.tech/",
+    highlight: "Magang",
+  },
+  {
     title: "AI-Powered Interview Assessment System",
     description:
       "Aplikasi web yang menilai kemampuan kandidat melalui wawancara berbasis AI serta analisis multimodal. Project ini terpilih sebagai Best Capstone Project di program Studi Independen ASAH by Dicoding.",
@@ -168,14 +179,5 @@ export const projects = [
     category: "Bot",
     tech: ["Node.js", "Discord", "Holodex API"],
     github: "https://github.com/dapakyuu/Bot_HoloSong",
-  },
-  {
-    title: "Web Portal Berita Winnicode",
-    description:
-      "Hasil magang di PT. Winnicode Garuda Teknologi. Portal berita berbasis Laravel yang mengintegrasikan NewsAPI, API cuaca BMKG, dan API livescore untuk klasemen sepak bola.",
-    image: "assets/winnicode_portalberita.png",
-    category: "Web",
-    tech: ["Laravel", "NewsAPI", "BMKG API"],
-    highlight: "Magang",
   },
 ];
