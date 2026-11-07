@@ -210,6 +210,7 @@ h3 {
   font-size: 0.95rem;
   transition:
     transform 0.25s var(--ease),
+    translate 0.3s var(--ease),
     box-shadow 0.25s var(--ease),
     background 0.25s,
     border-color 0.25s;
@@ -355,8 +356,23 @@ h3 {
   }
 }
 .nav-links {
+  position: relative;
   display: flex;
   gap: 0.35rem;
+}
+.nav-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.16);
+  border: 1px solid rgba(165, 139, 255, 0.3);
+  box-shadow: 0 0 20px -6px rgba(124, 92, 255, 0.8);
+  pointer-events: none;
+  transition:
+    transform 0.5s var(--ease),
+    width 0.5s var(--ease),
+    height 0.5s var(--ease);
 }
 .nav-links a {
   position: relative;
@@ -375,7 +391,6 @@ h3 {
 }
 .nav-links a.is-active {
   color: var(--text);
-  background: rgba(124, 92, 255, 0.16);
 }
 .nav-toggle {
   display: none;
@@ -515,7 +530,8 @@ h3 {
   transition:
     color 0.2s,
     border-color 0.2s,
-    transform 0.25s var(--ease);
+    transform 0.25s var(--ease),
+    translate 0.3s var(--ease);
 }
 .hero-socials a:hover,
 .footer-socials a:hover {
@@ -533,6 +549,13 @@ h3 {
   position: relative;
   width: min(100%, 480px);
   filter: drop-shadow(0 30px 60px rgba(63, 184, 255, 0.25));
+  /* parallax mengikuti mouse (diatur dari Hero.jsx) */
+  translate: calc(var(--px, 0) * 26px) calc(var(--py, 0) * 20px);
+  transition: translate 0.8s var(--ease);
+}
+.hero-copy {
+  translate: calc(var(--px, 0) * -8px) calc(var(--py, 0) * -6px);
+  transition: translate 0.8s var(--ease);
 }
 .orbit {
   position: absolute;
@@ -543,6 +566,8 @@ h3 {
 .orbit-1 {
   width: 92%;
   aspect-ratio: 1;
+  translate: calc(var(--px, 0) * -14px) calc(var(--py, 0) * -14px);
+  transition: translate 0.9s var(--ease);
 }
 .orbit-2 {
   width: 66%;
@@ -550,6 +575,27 @@ h3 {
   border-color: rgba(63, 184, 255, 0.2);
   animation-direction: reverse;
   animation-duration: 35s;
+  translate: calc(var(--px, 0) * -6px) calc(var(--py, 0) * -6px);
+  transition: translate 0.9s var(--ease);
+}
+.orbit-3 {
+  width: 118%;
+  aspect-ratio: 1;
+  border-style: dotted;
+  border-color: rgba(255, 92, 168, 0.16);
+  animation-duration: 80s;
+  translate: calc(var(--px, 0) * -24px) calc(var(--py, 0) * -24px);
+  transition: translate 1s var(--ease);
+}
+.orbit-3::after {
+  top: auto;
+  left: auto;
+  bottom: 16%;
+  right: 8%;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
 }
 .orbit::after {
   content: "";
@@ -607,15 +653,39 @@ h3 {
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
 }
+.skill-reveal {
+  display: flex;
+}
 .skill-card {
   position: relative;
+  width: 100%;
   padding: 2rem;
   overflow: hidden;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))
+    translateY(var(--lift, 0px));
   transition:
-    transform 0.4s var(--ease),
+    transform 0.5s var(--ease),
     border-color 0.4s,
-    background 0.4s,
-    opacity 0.8s var(--ease);
+    background 0.4s;
+}
+/* spotlight yang mengikuti kursor */
+.skill-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(124, 92, 255, 0.22),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.skill-card:hover::after {
+  opacity: 1;
 }
 .skill-card::before {
   content: "";
@@ -633,8 +703,33 @@ h3 {
   transition: opacity 0.4s;
 }
 .skill-card:hover {
-  transform: translateY(-6px);
+  --lift: -6px;
   background: var(--surface-hover);
+  transition:
+    transform 0.15s ease-out,
+    border-color 0.4s,
+    background 0.4s;
+}
+.skill-card:hover .skill-icon {
+  animation: icon-pop 0.7s var(--ease);
+}
+.skill-card:hover .chip {
+  animation: chip-wave 0.6s var(--ease) calc(var(--i) * 45ms) both;
+}
+@keyframes icon-pop {
+  40% {
+    transform: translateY(-8px) rotate(-8deg) scale(1.08);
+  }
+  70% {
+    transform: translateY(0) rotate(4deg);
+  }
+}
+@keyframes chip-wave {
+  40% {
+    transform: translateY(-5px);
+    border-color: rgba(165, 139, 255, 0.7);
+    color: #fff;
+  }
 }
 .skill-card:hover::before {
   opacity: 1;
@@ -736,19 +831,50 @@ h3 {
 }
 
 .project-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
   overflow: hidden;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))
+    translateY(var(--lift, 0px));
   transition:
-    transform 0.4s var(--ease),
+    transform 0.5s var(--ease),
+    scale 0.5s var(--ease),
     border-color 0.4s,
     box-shadow 0.4s;
 }
 .project-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(165, 139, 255, 0.45);
-  box-shadow: var(--shadow);
+  --lift: -6px;
+  transition:
+    transform 0.15s ease-out,
+    scale 0.5s var(--ease),
+    border-color 0.4s,
+    box-shadow 0.4s;
+}
+/* glow kartu memakai warna khas efek project-nya */
+.project-card.is-playing {
+  border-color: color-mix(in srgb, var(--fx) 60%, transparent);
+  box-shadow:
+    var(--shadow),
+    0 0 40px -12px var(--fx);
+}
+.glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.14),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+.project-card:hover .glare {
+  opacity: 1;
 }
 .project-media {
   position: relative;
@@ -775,7 +901,7 @@ h3 {
   position: absolute;
   top: 0.9rem;
   left: 0.9rem;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   gap: 0.4rem;
 }
@@ -1085,6 +1211,12 @@ h3 {
 .channel-instagram .channel-icon {
   background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
 }
+.channel-linkedin .channel-icon {
+  background: #0a66c2;
+}
+.channel-linkedin:hover {
+  border-color: rgba(10, 102, 194, 0.6);
+}
 .channel-github .channel-icon {
   background: #24292f;
   border: 1px solid var(--border-strong);
@@ -1313,9 +1445,637 @@ h3 {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .warp-flash,
+  .launch-rocket {
+    display: none;
   }
   html {
     scroll-behavior: auto;
+  }
+}
+
+/* =========================================================================
+   Efek global: kursor, progress scroll, intro warp, carousel, roket
+   ========================================================================= */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Kursor kustom (hanya aktif untuk mouse, lihat Cursor.jsx) */
+.has-cursor,
+.has-cursor * {
+  cursor: none !important;
+}
+.has-cursor input,
+.has-cursor textarea {
+  cursor: text !important;
+}
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.cursor.is-visible {
+  opacity: 1;
+}
+.cursor-dot,
+.cursor-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px #a58bff;
+  transition: opacity 0.2s;
+}
+.cursor-ring {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+}
+.cursor-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(165, 139, 255, 0.8);
+  transition:
+    transform 0.35s var(--ease),
+    background 0.3s,
+    border-color 0.3s,
+    opacity 0.3s;
+}
+.cursor-ring.is-hover::before {
+  transform: scale(1.6);
+  border-color: var(--primary-2);
+  background: rgba(63, 184, 255, 0.1);
+}
+.cursor-ring.has-label::before {
+  transform: scale(2.2);
+  border-color: transparent;
+  background: rgba(124, 92, 255, 0.85);
+}
+.cursor-ring.is-down::before {
+  transform: scale(0.8);
+}
+.cursor-ring.is-hover.is-down::before {
+  transform: scale(1.3);
+}
+.cursor-ring.is-text::before {
+  transform: scale(0.4);
+  opacity: 0;
+}
+.cursor-ring.is-text ~ .cursor-dot {
+  opacity: 0;
+}
+.cursor-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.25s,
+    transform 0.35s var(--ease);
+}
+.cursor-ring.has-label .cursor-label {
+  opacity: 1;
+  transform: none;
+}
+
+/* Progress scroll */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: 3px;
+  pointer-events: none;
+}
+.scroll-progress span {
+  position: relative;
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  background: var(--gradient);
+  box-shadow: 0 0 12px rgba(124, 92, 255, 0.8);
+}
+.scroll-progress span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 12px 3px var(--primary-2);
+}
+
+/* Kilatan cahaya intro warp */
+.warp-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(
+    circle at center,
+    rgba(210, 200, 255, 0.5),
+    rgba(124, 92, 255, 0.15) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  animation: warp-flash 1.9s ease-out both;
+}
+@keyframes warp-flash {
+  0% {
+    opacity: 0.9;
+  }
+  35% {
+    opacity: 0.2;
+  }
+  62% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Carousel: kartu mengecil saat bergeser, dan masuk bertahap setelah filter diganti */
+.carousel-track.is-moving .project-card {
+  scale: 0.95;
+}
+.carousel-track.is-entering .carousel-slide {
+  animation: slide-enter 0.7s var(--ease) calc(var(--i) * 90ms) both;
+}
+@keyframes slide-enter {
+  from {
+    opacity: 0;
+    transform: perspective(800px) translateY(40px) rotateX(-18deg) scale(0.92);
+  }
+}
+
+/* Roket yang meluncur setelah pesan terkirim. Geser 140vmax di kedua sumbu = sudut 45°,
+   sejajar dengan arah ikon roket. */
+.launch-rocket {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  font-size: 2.6rem;
+  color: #fff;
+  pointer-events: none;
+  filter: drop-shadow(0 0 14px #ff8a5c) drop-shadow(0 0 30px rgba(124, 92, 255, 0.8));
+  animation: launch 2.2s cubic-bezier(0.55, 0, 0.35, 1) forwards;
+}
+.launch-rocket::after {
+  content: "";
+  position: absolute;
+  top: 72%;
+  right: 72%;
+  width: 140px;
+  height: 6px;
+  border-radius: 99px;
+  background: linear-gradient(to left, #ffd166, rgba(255, 92, 168, 0.6), transparent);
+  transform: rotate(-45deg);
+  transform-origin: right center;
+}
+@keyframes launch {
+  from {
+    transform: translate(-20vmax, 100vh) scale(0.6);
+  }
+  to {
+    transform: translate(120vmax, calc(100vh - 140vmax)) scale(1.3);
+  }
+}
+
+/* =========================================================================
+   Tombol CV + menu pilihan versi
+   ========================================================================= */
+.cv-menu {
+  position: relative;
+  display: inline-flex;
+}
+.cv-caret {
+  transition: transform 0.3s var(--ease);
+}
+.cv-caret.is-open {
+  transform: rotate(180deg);
+}
+.cv-dropdown {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 50%;
+  z-index: 30;
+  width: max-content;
+  min-width: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.45rem;
+  border-radius: var(--radius-sm);
+  background: rgba(13, 13, 38, 0.96);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 24px 50px -16px rgba(0, 0, 0, 0.8), 0 0 30px -12px rgba(124, 92, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -8px) scale(0.97);
+  transform-origin: top center;
+  transition:
+    opacity 0.25s,
+    transform 0.3s var(--ease),
+    visibility 0s 0.3s;
+}
+.cv-dropdown.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition:
+    opacity 0.25s,
+    transform 0.3s var(--ease),
+    visibility 0s;
+}
+.cv-item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+.cv-open {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  text-align: left;
+  transition: background 0.2s;
+}
+.cv-open:hover,
+.cv-download:hover {
+  background: rgba(124, 92, 255, 0.16);
+}
+.cv-open strong {
+  display: block;
+  font-size: 0.9rem;
+}
+.cv-open small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.cv-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--gradient);
+  color: #fff;
+  font-size: 1.15rem;
+}
+.cv-download {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  border-radius: 10px;
+  font-size: 1.15rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.cv-download:hover {
+  color: #fff;
+}
+
+/* =========================================================================
+   Project: pilihan tampilan (scroll / kartu)
+   ========================================================================= */
+.project-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem 1.2rem;
+  margin-bottom: 1.4rem;
+}
+.view-toggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+}
+/* "thumb" yang bergeser ke tombol aktif */
+.view-toggle::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 999px;
+  background: var(--gradient);
+  box-shadow: 0 6px 18px -6px rgba(124, 92, 255, 0.9);
+  transition: transform 0.45s var(--ease);
+}
+.view-toggle[data-view="card"]::before {
+  transform: translateX(100%);
+}
+.view-toggle button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.3s;
+}
+.view-toggle button.is-active {
+  color: #fff;
+}
+.view-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+.view-skip:hover {
+  color: var(--text);
+}
+.view-skip svg {
+  animation: skip-bob 1.6s ease-in-out infinite;
+}
+@keyframes skip-bob {
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+/* =========================================================================
+   Project: tampilan scroll (panel sticky yang saling menumpuk)
+   ========================================================================= */
+.stack-list {
+  --stack-top: calc(var(--nav-h) + 1rem);
+  list-style: none;
+}
+.stack-item {
+  position: sticky;
+  top: var(--stack-top);
+  height: calc(100svh - var(--nav-h) - 2rem);
+}
+.stack-card {
+  position: relative;
+  height: calc(100% - 1.25rem);
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  overflow: hidden;
+  /* latar solid (bukan glass) supaya panel di bawahnya tidak tembus terlihat */
+  background: linear-gradient(160deg, #15133c 0%, #0c0c25 60%, #0a0a20 100%);
+  /* panel yang tertutup panel berikutnya mengecil dan meredup */
+  transform: scale(calc(1 - var(--cover, 0) * 0.07));
+  transform-origin: top center;
+  transition:
+    border-color 0.4s,
+    box-shadow 0.4s;
+}
+.stack-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  background: var(--bg);
+  opacity: calc(var(--cover, 0) * 0.8);
+  pointer-events: none;
+}
+.stack-card.is-playing {
+  border-color: color-mix(in srgb, var(--fx) 55%, transparent);
+  box-shadow:
+    var(--shadow),
+    0 0 50px -16px var(--fx);
+}
+.stack-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+.stack-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+  filter: blur(40px) saturate(1.4);
+  transform: scale(1.3);
+}
+.stack-visual .project-media {
+  width: 100%;
+  border-radius: 14px;
+  box-shadow:
+    0 30px 60px -20px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.stack-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 0;
+  padding: clamp(1.5rem, 3vw, 3rem);
+}
+.stack-count {
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.stack-count b {
+  margin-right: 0.3rem;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stack-body h3 {
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+}
+.stack-body p {
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.stack-body .project-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+/* chip "terbang" masuk saat panel menjadi aktif */
+.stack-card.is-playing .chip {
+  animation: chip-in 0.5s var(--ease) calc(0.15s + var(--i) * 60ms) both;
+}
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+}
+
+/* Rail navigasi di sisi kanan (desktop lebar) */
+.stack-rail {
+  position: fixed;
+  top: 50%;
+  right: 1.25rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(20px, -50%);
+  transition:
+    opacity 0.4s,
+    transform 0.4s var(--ease);
+}
+.stack-rail.is-shown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+}
+.stack-rail button {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.25);
+  transition:
+    height 0.35s var(--ease),
+    background 0.3s;
+}
+.stack-rail button:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+.stack-rail button.is-active {
+  height: 26px;
+  background: var(--gradient);
+}
+.stack-rail button span {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  background: rgba(13, 13, 38, 0.95);
+  border: 1px solid var(--border);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(6px, -50%);
+  transition:
+    opacity 0.2s,
+    transform 0.2s var(--ease);
+}
+.stack-rail button:hover span,
+.stack-rail button:focus-visible span {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+@media (max-width: 1279px) {
+  .stack-rail {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .stack-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .stack-visual {
+    padding: 0.9rem;
+  }
+  .stack-body {
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.9rem 1.2rem 1.2rem;
+    overflow: hidden;
+  }
+  .stack-count b {
+    font-size: 2rem;
+  }
+  .stack-body h3 {
+    font-size: 1.2rem;
+  }
+  .stack-body p {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 4;
+  }
+  .stack-body .project-links {
+    margin-top: auto;
+  }
+}
+@media (max-width: 900px) and (max-height: 720px) {
+  .stack-body p {
+    -webkit-line-clamp: 3;
+  }
+  .stack-body .chips {
+    display: none;
   }
 }

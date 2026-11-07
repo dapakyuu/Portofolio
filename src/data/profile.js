@@ -17,10 +17,22 @@ export const profile = {
   languages: ["Bahasa Indonesia", "English", "日本語 (Jepang)"],
   socials: {
     github: "https://github.com/dapakyuu",
+    linkedin: "https://www.linkedin.com/in/daffa-al-fathir-ismail/",
     instagram: "https://instagram.com/daffa_alfathir_",
     // Format wa.me wajib kode negara tanpa "0" di depan (62...)
     whatsapp: "https://wa.me/6289636733777",
   },
+  // File CV di public/cv. Ganti file-nya dengan nama yang sama untuk memperbarui CV.
+  cv: [
+    {
+      label: "CV Kreatif",
+      href: "cv/CV_Daffa_Al-Fathir_Ismail.pdf",
+    },
+    {
+      label: "CV ATS",
+      href: "cv/CV_ATS_Daffa_Al-Fathir_Ismail.pdf",
+    },
+  ],
 };
 
 /**

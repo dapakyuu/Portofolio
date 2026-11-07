@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { FaGithub, FaInstagram } from "react-icons/fa";
+import { FaGithub, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { HiOutlineAcademicCap, HiOutlineGlobeAlt } from "react-icons/hi";
 import { profile } from "../data/profile";
 import { projects } from "../data/projects";
 import { useInView } from "../hooks/useInView";
+import CvButton from "./CvButton";
 import Reveal from "./Reveal";
 import SectionHeading from "./SectionHeading";
 
@@ -57,6 +58,10 @@ export default function About() {
             </Reveal>
 
             <Reveal delay={300} className="about-actions">
+              <CvButton className="btn btn-primary" />
+              <a href={profile.socials.linkedin} target="_blank" rel="noreferrer" className="btn btn-ghost">
+                <FaLinkedin /> LinkedIn
+              </a>
               <a href={profile.socials.github} target="_blank" rel="noreferrer" className="btn btn-ghost">
                 <FaGithub /> GitHub
               </a>

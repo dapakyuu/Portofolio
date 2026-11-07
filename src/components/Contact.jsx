@@ -1,7 +1,7 @@
 import { useState } from "react";
 import emailjs from "@emailjs/browser";
 import Swal from "sweetalert2";
-import { FaGithub, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { FaGithub, FaInstagram, FaLinkedin, FaRocket, FaWhatsapp } from "react-icons/fa";
 import { HiOutlinePaperAirplane } from "react-icons/hi";
 import { emailConfig, profile } from "../data/profile";
 import Reveal from "./Reveal";
@@ -17,6 +17,7 @@ const swalTheme = {
 
 const channels = [
   { label: "WhatsApp", href: profile.socials.whatsapp, icon: FaWhatsapp, note: "Respon paling cepat" },
+  { label: "LinkedIn", href: profile.socials.linkedin, icon: FaLinkedin, note: "Daffa Al-Fathir Ismail" },
   { label: "Instagram", href: profile.socials.instagram, icon: FaInstagram, note: "@daffa_alfathir_" },
   { label: "GitHub", href: profile.socials.github, icon: FaGithub, note: "@dapakyuu" },
 ];
@@ -24,6 +25,8 @@ const channels = [
 export default function Contact() {
   const [form, setForm] = useState(EMPTY);
   const [sending, setSending] = useState(false);
+  // Roket yang meluncur melintasi layar setiap kali pesan berhasil terkirim.
+  const [launches, setLaunches] = useState([]);
 
   const canSubmit = Object.values(form).every((v) => v.trim() !== "") && !sending;
 
@@ -45,6 +48,7 @@ export default function Contact() {
         },
         { publicKey: emailConfig.publicKey },
       );
+      setLaunches((l) => [...l, Date.now()]);
       Swal.fire({ ...swalTheme, title: "Berhasil!", text: "Pesan kamu sudah terkirim.", icon: "success", confirmButtonText: "Oke" });
       setForm(EMPTY);
     } catch (err) {
@@ -57,6 +61,16 @@ export default function Contact() {
 
   return (
     <section id="contact" className="section">
+      {launches.map((id) => (
+        <span
+          key={id}
+          className="launch-rocket"
+          aria-hidden="true"
+          onAnimationEnd={() => setLaunches((l) => l.filter((x) => x !== id))}
+        >
+          <FaRocket />
+        </span>
+      ))}
       <div className="container">
         <SectionHeading
           eyebrow="Kontak"

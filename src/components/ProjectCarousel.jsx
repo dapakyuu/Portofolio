@@ -6,7 +6,7 @@ import ProjectCard from "./ProjectCard";
 const AUTOPLAY_MS = 5000;
 const SWIPE_THRESHOLD = 50;
 
-export default function ProjectCarousel({ items }) {
+export default function ProjectCarousel({ items, animateIn = false }) {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const isTablet = useMediaQuery("(min-width: 680px)");
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -26,6 +26,17 @@ export default function ProjectCarousel({ items }) {
   );
   const next = useCallback(() => goTo(current + 1), [goTo, current]);
   const prev = useCallback(() => goTo(current - 1), [goTo, current]);
+
+  // Saat bergeser, kartu sedikit mengecil lalu kembali, memberi kesan kedalaman.
+  const [moving, setMoving] = useState(false);
+  const prevIndex = useRef(current);
+  useEffect(() => {
+    if (prevIndex.current === current) return;
+    prevIndex.current = current;
+    setMoving(true);
+    const t = setTimeout(() => setMoving(false), 550);
+    return () => clearTimeout(t);
+  }, [current]);
 
   useEffect(() => {
     if (paused || reducedMotion || maxIndex === 0) return;
@@ -73,19 +84,29 @@ export default function ProjectCarousel({ items }) {
         onPointerCancel={() => (dragStart.current = null)}
       >
         <ul
-          className={`carousel-track ${maxIndex === 0 ? "is-centered" : ""}`}
+          className={[
+            "carousel-track",
+            maxIndex === 0 && "is-centered",
+            moving && "is-moving",
+            animateIn && "is-entering",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           style={{ transform: `translateX(-${(current * 100) / perView}%)` }}
         >
-          {items.map((project, i) => (
-            <li
-              key={project.title}
-              className="carousel-slide"
-              style={{ flexBasis: `${100 / perView}%` }}
-              aria-hidden={i < current || i >= current + perView}
-            >
-              <ProjectCard project={project} />
-            </li>
-          ))}
+          {items.map((project, i) => {
+            const hidden = i < current || i >= current + perView;
+            return (
+              <li
+                key={project.title}
+                className="carousel-slide"
+                style={{ flexBasis: `${100 / perView}%`, "--i": Math.max(0, i - current) }}
+                aria-hidden={hidden}
+              >
+                <ProjectCard project={project} visible={!hidden} />
+              </li>
+            );
+          })}
         </ul>
       </div>
 

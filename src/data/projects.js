@@ -17,10 +17,15 @@
  *   demo        (opsional) Link demo / website live
  *   demoLabel   (opsional) Teks tombol demo, default "Live Demo"
  *   highlight   (opsional) Teks badge khusus, mis. "Publikasi Jurnal"
+ *   fx          (opsional) Animasi khusus saat kartu di-hover. Pilihan: scan, ticker,
+ *                        interview, docs, equalizer, romaji, gacha, manga, live, pixel,
+ *                        bounce, window, compass, cipher, rating, notify, chat, sparkle.
+ *                        Lihat src/components/ProjectFx.jsx. Default: sparkle.
  */
 export const projects = [
   {
     title: "Forensa — Verifikasi Dokumen Berbasis AI",
+    fx: "scan",
     description:
       "Aplikasi web untuk memeriksa keaslian dokumen pendidikan PDF melalui AI. Project ini merupakan hasil dari penelitian afirmasi salah satu dosen teknik komputer UPI.",
     image: "assets/forensa.png",
@@ -32,6 +37,7 @@ export const projects = [
   },
   {
     title: "Web Portal Berita Winnicode",
+    fx: "ticker",
     description:
       "Hasil magang di PT. Winnicode Garuda Teknologi. Portal berita berbasis Laravel yang mengintegrasikan NewsAPI, API cuaca BMKG, dan API livescore untuk klasemen sepak bola.",
     image: "assets/winnicode_portalberita.png",
@@ -43,6 +49,7 @@ export const projects = [
   },
   {
     title: "AI-Powered Interview Assessment System",
+    fx: "interview",
     description:
       "Aplikasi web yang menilai kemampuan kandidat melalui wawancara berbasis AI serta analisis multimodal. Project ini terpilih sebagai Best Capstone Project di program Studi Independen ASAH by Dicoding.",
     image: "assets/analisis_interview.png",
@@ -54,6 +61,7 @@ export const projects = [
   },
   {
     title: "Dokumentasi AI Interview Assessment System",
+    fx: "docs",
     description:
       "Website dokumentasi untuk AI-Powered Interview Assessment System yang dibangun dengan MkDocs Material, berisi panduan instalasi, cara penggunaan, dan referensi API.",
     image: "assets/mkdocs_interview.png",
@@ -64,6 +72,7 @@ export const projects = [
   },
   {
     title: "Bot Discord Stellar",
+    fx: "equalizer",
     description:
       "Bot Discord musik dan karaoke yang memutar audio dari YouTube di voice channel serta menampilkan lirik dan romaji Jepang. Mendukung prefix st. dan slash command.",
     image: "assets/bot_stellar.png",
@@ -72,6 +81,7 @@ export const projects = [
   },
   {
     title: "Extension Stellar — YouTube Lyrics Finder & Romaji",
+    fx: "romaji",
     description:
       "Ekstensi browser untuk menampilkan lirik lagu di YouTube dari LRCLIB dan SimpMusic, mengubah kanji Jepang menjadi romaji, dilengkapi mode karaoke dan pengaturan timing offset.",
     image: "assets/extension_stellar.png",
@@ -80,6 +90,7 @@ export const projects = [
   },
   {
     title: "Bot Discord Arknights Banner",
+    fx: "gacha",
     description:
       "Bot Discord yang menampilkan informasi banner headhunting dan event Arknights yang akan datang, mengambil data langsung dari Arknights Wiki melalui slash command.",
     image: "assets/bot_arknights.png",
@@ -88,6 +99,7 @@ export const projects = [
   },
   {
     title: "MangaDex Read Status Filter",
+    fx: "manga",
     description:
       "Userscript Tampermonkey yang menambahkan filter berdasarkan status baca (Reading, Completed, Dropped, dll.) di halaman Advanced Search MangaDex, dengan filter yang tetap aktif saat berpindah halaman.",
     image: "assets/mangadex.jpg",
@@ -99,6 +111,7 @@ export const projects = [
   },
   {
     title: "Website HoloBell",
+    fx: "live",
     description:
       'Project "Website Hololive Streaming Schedule Berbasis PHP menggunakan Holodex API" dari mata kuliah Rekayasa Perangkat Lunak. Project ini menghasilkan artikel ilmiah yang diterbitkan di Jurnal Tekno Kompak Vol. 19, No. 1, Tahun 2025.',
     image: "assets/webhololive.png",
@@ -109,6 +122,7 @@ export const projects = [
   },
   {
     title: "Game RPG Berbasis Godot",
+    fx: "pixel",
     description:
       "Game RPG dengan Godot Engine yang memiliki mini games bertema struktur data seperti stack, queue, dan sort, dibuat untuk tugas besar mata kuliah Struktur Data.",
     image: "assets/rpg-godot.png",
@@ -118,6 +132,7 @@ export const projects = [
   },
   {
     title: "Website GOR Kharisma",
+    fx: "bounce",
     description:
       "Website berbasis PHP untuk mitra GOR Kharisma dengan fitur utama reservasi online agar memudahkan pelanggan. Dibuat untuk mata kuliah Proyek Konsultasi.",
     image: "assets/gor-web.png",
@@ -127,6 +142,7 @@ export const projects = [
   },
   {
     title: "Aplikasi Desktop GOR Kharisma",
+    fx: "window",
     description:
       "Aplikasi desktop berbasis Java untuk mitra GOR Kharisma dengan fitur utama yang sama seperti versi website dan database yang terkoneksi. Dibuat untuk mata kuliah Pemrograman Berbasis Objek.",
     image: "assets/gor-mobile.jpg",
@@ -136,6 +152,7 @@ export const projects = [
   },
   {
     title: "Aplikasi Mobile Graha Bhakti Nusa",
+    fx: "compass",
     description:
       "Luaran dari program pengabdian masyarakat bersama Yayasan Graha Bhakti Nusa untuk memudahkan pengguna dalam mengakses layanan yayasan.",
     image: "assets/gbn.png",
@@ -146,6 +163,7 @@ export const projects = [
   },
   {
     title: "Website Kriptografi dan Steganografi",
+    fx: "cipher",
     description:
       "Mengenkripsi pesan dengan Caesar Cipher yang dimodifikasi lalu menyisipkannya ke gambar dengan steganografi metode LSB. Web ini juga dapat mendekripsi pesan tersebut.",
     image: "assets/web_enkripsi.png",
@@ -155,6 +173,7 @@ export const projects = [
   },
   {
     title: "Website Rakun Games",
+    fx: "rating",
     description:
       "Website PHP untuk usaha jasa rawat akun dan partner game online, dilengkapi sistem cerdas yang merekomendasikan agen berdasarkan analisis sentimen ulasan pelanggan, serta pembayaran via Midtrans.",
     image: "assets/web_rakun.png",
@@ -164,6 +183,7 @@ export const projects = [
   },
   {
     title: "Aplikasi Mobile Rakun Games",
+    fx: "notify",
     description:
       "Versi mobile Rakun Games berbasis Flutter dengan sistem rekomendasi agen dari analisis sentimen ulasan pelanggan dan pembayaran melalui Midtrans.",
     image: "assets/mobile_rakun.png",
@@ -173,6 +193,7 @@ export const projects = [
   },
   {
     title: "Bot Discord HoloSong",
+    fx: "chat",
     description:
       "Bot Discord berbasis Node.js yang memanfaatkan Holodex API untuk menampilkan lagu terbaru member Hololive, detail lagu, dan link streaming secara otomatis.",
     image: "assets/bot_discord_holosong.png",

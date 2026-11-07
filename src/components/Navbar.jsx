@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FaUserAstronaut } from "react-icons/fa";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { useActiveSection } from "../hooks/useActiveSection";
@@ -28,6 +28,21 @@ export default function Navbar() {
     document.body.style.overflow = open ? "hidden" : "";
   }, [open]);
 
+  // Pill penanda menu aktif yang bergeser ke link yang sedang aktif.
+  const listRef = useRef(null);
+  const [pill, setPill] = useState(null);
+  useLayoutEffect(() => {
+    const update = () => {
+      const link = listRef.current?.querySelector(`a[href="#${active}"]`);
+      if (!link) return;
+      setPill({ x: link.offsetLeft, y: link.offsetTop, w: link.offsetWidth, h: link.offsetHeight });
+    };
+    update();
+    document.fonts?.ready.then(update);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [active, open]);
+
   const close = () => setOpen(false);
 
   return (
@@ -43,7 +58,18 @@ export default function Navbar() {
           </span>
         </a>
 
-        <ul className={`nav-links ${open ? "is-open" : ""}`}>
+        <ul ref={listRef} className={`nav-links ${open ? "is-open" : ""}`}>
+          {pill && (
+            <li
+              className="nav-pill"
+              role="presentation"
+              style={{
+                width: pill.w,
+                height: pill.h,
+                transform: `translate(${pill.x}px, ${pill.y}px)`,
+              }}
+            />
+          )}
           {LINKS.map((link) => (
             <li key={link.id}>
               <a

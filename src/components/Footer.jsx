@@ -1,9 +1,9 @@
-import { FaGithub, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { FaGithub, FaInstagram, FaLinkedin, FaWhatsapp } from "react-icons/fa";
 import { HiArrowUp } from "react-icons/hi";
 import { profile } from "../data/profile";
 
 export default function Footer() {
-  const { github, instagram, whatsapp } = profile.socials;
+  const { github, linkedin, instagram, whatsapp } = profile.socials;
   return (
     <footer className="footer">
       <div className="container footer-inner">
@@ -11,6 +11,7 @@ export default function Footer() {
           © {new Date().getFullYear()} {profile.name}. Dibuat dengan React.
         </p>
         <div className="footer-socials">
+          <a href={linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"><FaLinkedin /></a>
           <a href={github} target="_blank" rel="noreferrer" aria-label="GitHub"><FaGithub /></a>
           <a href={instagram} target="_blank" rel="noreferrer" aria-label="Instagram"><FaInstagram /></a>
           <a href={whatsapp} target="_blank" rel="noreferrer" aria-label="WhatsApp"><FaWhatsapp /></a>
